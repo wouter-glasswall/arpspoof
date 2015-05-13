@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """
+    Simple tool that sends out arp at-is messages to hijack ip adresses
+    Copyright (C) 2015  Bram Staps (Glasswall B.V.)
+
     This file is part of ArpSpoof.
     Dhcpgag is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +31,7 @@ sys.stderr = t
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument("interface", help="The sending interface", type=str)
 parser.add_argument("--interval", help="interval between packets in seconds (default = 5.0)", type=float)
 parser.add_argument("--count", help="How Manny packets to send in total (default = 1, 0 = infinite)")
 
@@ -42,7 +46,6 @@ parser.add_argument("--targetetherip", help="target Ip address in Arp frame (def
 args = parser.parse_args()
 
 
-
 if os.geteuid():
     sys.stderr.write("You need to be root.")
     exit(1)
@@ -51,7 +54,6 @@ if os.geteuid():
 
 #default behaviour is "spoofing" your own ip with your own mac
 sendString = Ether() / ARP(op="is-at")
-#sendString = Ether(dst="E8:39:35:35:B1:E5") / ARP(op="is-at")
 
 interval = 5.0
 if args.interval: interval = args.interval
@@ -83,19 +85,13 @@ if args.targetetherip:
     
 
 def loop():
-    sendp( sendString, verbose=False )
+    sendp( sendString, verbose=False, iface=args.interface )
     sleep(interval)
         
 
-print count
 if count:
     for x in xrange(count):
         loop()
 else:
     while True:
         loop()
-
-
-
-
-
